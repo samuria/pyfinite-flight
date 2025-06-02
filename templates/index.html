@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infinite Flight Connect</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Infinite Flight Connect</h1>
+            <div class="connection-status" id="connectionStatus">
+                <span class="status-indicator disconnected"></span>
+                <span class="status-text">Not Connected</span>
+            </div>
+        </header>
+
+        <main>
+            <!-- Discovery Section -->
+            <section class="discovery-section">
+                <h2>Device Discovery</h2>
+                <button id="discoverBtn" class="btn btn-primary">
+                    <span class="btn-icon">🔍</span>
+                    Scan for Devices
+                </button>
+
+                <div id="discoveryStatus" class="discovery-status"></div>
+
+                <div id="deviceList" class="device-list">
+                </div>
+            </section>
+
+            <!-- Connection Info Section -->
+            <section class="connection-section" id="connectionSection" style="display: none;">
+                <h2>Connection Details</h2>
+                <div class="connection-info">
+                    <div class="info-item">
+                        <label>Host:</label>
+                        <span id="connectedHost">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Port:</label>
+                        <span id="connectedPort">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Available States:</label>
+                        <span id="availableStates">-</span>
+                    </div>
+                </div>
+                <button id="disconnectBtn" class="btn btn-danger">
+                    <span class="btn-icon">❌</span>
+                    Disconnect
+                </button>
+            </section>
+
+            <!-- Live Location Section -->
+            <section class="location-section" id="locationSection" style="display: none;">
+                <h2>Aircraft</h2>
+                <div class="location-content">
+                    <div class="location-grid">
+                        <div class="location-item">
+                            <div class="location-label">Aircraft</div>
+                            <div class="location-value" id="aircraftValue">-</div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-label">Livery</div>
+                            <div class="location-value" id="liveryValue">-</div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-label">Latitude</div>
+                            <div class="location-value" id="latitudeValue">-</div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-label">Longitude</div>
+                            <div class="location-value" id="longitudeValue">-</div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-label">Altitude MSL</div>
+                            <div class="location-value" id="altitudeMslValue">-</div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-label">Altitude AGL</div>
+                            <div class="location-value" id="altitudeAglValue">-</div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-label">Heading</div>
+                            <div class="location-value" id="headingValue">-</div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-label">Speed</div>
+                            <div class="location-value" id="speedValue">-</div>
+                        </div>
+                    </div>
+                    <div class="update-indicator" id="updateIndicator">
+                        <span class="update-dot"></span>
+                        <span class="update-text">Live</span>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <button id="setFlapsBtn" class="btn btn-primary">Set Flaps to 1</button>
+                        <span id="setFlapsStatus" style="margin-left: 10px;"></span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- State Categories Section -->
+            <section class="categories-section" id="categoriesSection" style="display: none;">
+                <h2>State Categories</h2>
+                <div id="categoriesList" class="categories-list">
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>PyFinite Flight Web Interface</p>
+        </footer>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="spinner"></div>
+        <p id="loadingText">Loading...</p>
+    </div>
+
+    <!-- States Modal -->
+    <div id="statesModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Category States</h2>
+                <button class="modal-close" onclick="closeStatesModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div id="statesLoading" class="states-loading">
+                    <div class="small-spinner"></div>
+                    <p>Loading states...</p>
+                </div>
+                <div id="statesList" class="states-list" style="display: none;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+
+</html>
