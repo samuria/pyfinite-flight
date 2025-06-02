@@ -12,6 +12,33 @@ A Python client for discovering, connecting to, and interacting with Infinite Fl
 -   Async/await support for API interactions.
 -   Flask-based web interface with real-time WebSocket communication.
 
+### Web Interface
+
+The project includes a Flask-based web interface for interacting with Infinite Flight.
+
+![PyFinite Flight Web Interface Screenshot](screenshot.png)
+
+**Features:**
+-   Real-time device discovery.
+-   Visual connection management.
+-   Display of aircraft information (Aircraft, Livery, Location, Speed, Altitude, Heading).
+-   Categorized browsing of all available aircraft states.
+-   Ability to set specific states (e.g., "Set Flaps to 1" button).
+-   Responsive design.
+
+**Setup & Run:**
+
+1.  **Set Environment Variables**:
+    As mentioned in Configuration, ensure `FLASK_SECRET_KEY` is set.
+
+2.  **Run the Web Server**:
+    From the project root directory:
+    ```bash
+    python app.py
+    ```
+
+3.  Open `http://localhost:5000` in your browser.
+
 ## Project Structure
 
 ```
@@ -20,12 +47,10 @@ pyfinite-flight/
 │   ├── api/
 │   │   ├── __init__.py
 │   │   └── client.py       # Core Infinite Flight API client
-│   ├── web_gui/
-│   │   ├── __init__.py     # (Optional, if making web_gui a package)
-│   │   ├── app.py          # Flask application
-│   │   ├── static/         # CSS, JavaScript
-│   │   └── templates/      # HTML templates
 │   └── __init__.py
+├── static/                 # CSS, JavaScript for web interface
+├── templates/              # HTML templates for web interface
+├── app.py                  # Flask application
 ├── test/                   # Test scripts
 ├── .gitignore
 ├── pyproject.toml
@@ -59,7 +84,7 @@ pyfinite-flight/
 ### Environment Variables
 The web interface uses a Flask secret key. Set this as an environment variable:
 ```bash
-export FLASK_SECRET_KEY='your_very_strong_and_unique_secret_key'
+export FLASK_SECRET_KEY='pyfinite-flight-secret'
 # On Windows, use: set FLASK_SECRET_KEY=your_very_strong_and_unique_secret_key
 ```
 Replace `'your_very_strong_and_unique_secret_key'` with a randomly generated string.
@@ -205,33 +230,6 @@ async def set_flaps_example():
 if __name__ == "__main__":
     asyncio.run(set_flaps_example())
 ```
-
-### Web Interface
-
-The project includes a Flask-based web interface for interacting with Infinite Flight.
-
-1.  **Set Environment Variables**:
-    As mentioned in Configuration, ensure `FLASK_SECRET_KEY` is set.
-
-2.  **Run the Web Server**:
-    From the project root directory:
-    ```bash
-    python src/web_gui/app.py
-    ```
-    Or, for production, use a WSGI server like Gunicorn:
-    ```bash
-    gunicorn -w 4 -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -b 0.0.0.0:5000 src.web_gui.app:app
-    ```
-
-3.  Open `http://localhost:5000` in your browser.
-
-**Web Interface Features:**
--   Real-time device discovery.
--   Visual connection management.
--   Display of aircraft information (Aircraft, Livery, Location, Speed, Altitude, Heading).
--   Categorized browsing of all available aircraft states.
--   Ability to set specific states (e.g., "Set Flaps to 1" button).
--   Responsive design.
 
 ## Device Discovery Information
 
