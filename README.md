@@ -84,7 +84,7 @@ pyfinite-flight/
 ### Environment Variables
 The web interface uses a Flask secret key. Set this as an environment variable:
 ```bash
-export FLASK_SECRET_KEY='pyfinite-flight-secret'
+export FLASK_SECRET_KEY='your_very_strong_and_unique_secret_key'
 # On Windows, use: set FLASK_SECRET_KEY=your_very_strong_and_unique_secret_key
 ```
 Replace `'your_very_strong_and_unique_secret_key'` with a randomly generated string.
