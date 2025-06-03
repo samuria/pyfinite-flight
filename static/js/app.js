@@ -21,6 +21,28 @@ const loadingText = document.getElementById('loadingText');
 const setFlapsBtn = document.getElementById('setFlapsBtn');
 const setFlapsStatus = document.getElementById('setFlapsStatus');
 
+// Flight Planner DOM elements
+const flightPlannerSection = document.getElementById('flightPlannerSection');
+const fpBearing = document.getElementById('fpBearing');
+const fpDesiredTrack = document.getElementById('fpDesiredTrack');
+const fpDistanceToDestination = document.getElementById('fpDistanceToDestination');
+const fpDistanceToNext = document.getElementById('fpDistanceToNext');
+const fpEtaToDestination = document.getElementById('fpEtaToDestination');
+const fpEtaToNext = document.getElementById('fpEtaToNext');
+const fpEteToDestination = document.getElementById('fpEteToDestination');
+const fpEteToNext = document.getElementById('fpEteToNext');
+const fpTrack = document.getElementById('fpTrack');
+const fpWaypointName = document.getElementById('fpWaypointName');
+const fpIcao = document.getElementById('fpIcao');
+const fpNextWaypointLatitude = document.getElementById('fpNextWaypointLatitude');
+const fpNextWaypointLongitude = document.getElementById('fpNextWaypointLongitude');
+const fpXTrackErrorDistance = document.getElementById('fpXTrackErrorDistance');
+const fpXTrackErrorAngle = document.getElementById('fpXTrackErrorAngle');
+const fpTotalDistance = document.getElementById('fpTotalDistance');
+const fpNextWaypointIndex = document.getElementById('fpNextWaypointIndex');
+const fpWaypointsList = document.getElementById('fpWaypointsList');
+// const getFlightPlanBtn = document.getElementById('getFlightPlanBtn'); // Manual button removed
+
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners();
@@ -36,13 +58,24 @@ function setupEventListeners() {
         setFlapsBtn.addEventListener('click', () => {
             if (isConnected) {
                 console.log("Emitting set_aircraft_state for flaps");
-                socket.emit("set_aircraft_state", { state_name: "aircraft/0/systems/flaps/state", value: 1 });
+                socket.emit("set_aircraft_state", { state_name: "aircraft/0/systems/flaps/state", value: 2 });
                 setFlapsStatus.textContent = 'Setting flaps...';
             } else {
                 setFlapsStatus.textContent = 'Not connected.';
             }
         });
     }
+    // if (getFlightPlanBtn) { // Manual button removed
+    //     getFlightPlanBtn.addEventListener('click', () => {
+    //         if (isConnected) {
+    //             console.log("Emitting get_flight_plan_manually");
+    //             socket.emit("get_flight_plan_manually");
+    //         } else {
+    //             // Optionally, provide feedback if not connected
+    //             alert("Not connected to Infinite Flight. Cannot fetch flight plan.");
+    //         }
+    //     });
+    // }
 }
 
 // Socket Event Listeners
@@ -155,6 +188,10 @@ function setupSocketListeners() {
             }, 5000);
         }
     });
+
+    socket.on('flight_plan_update', (data) => {
+        updateFlightPlanDisplay(data);
+    });
 }
 
 // Discovery Functions
@@ -262,6 +299,7 @@ function handleConnectionStatus(data) {
             statusText.textContent = 'Connected';
             connectionSection.style.display = 'block';
             locationSection.style.display = 'block';
+            flightPlannerSection.style.display = 'block'; // Show flight planner
             discoverySection.style.display = 'none'; // Hide discovery section when connected
 
             if (data.host && data.port) {
@@ -290,6 +328,7 @@ function handleConnectionStatus(data) {
             connectionSection.style.display = 'none';
             categoriesSection.style.display = 'none';
             locationSection.style.display = 'none';
+            flightPlannerSection.style.display = 'none'; // Hide flight planner
             discoverySection.style.display = 'block'; // Show discovery section when disconnected
             showDiscoveryStatus(data.message || 'Disconnected', 'info');
             break;
@@ -302,6 +341,7 @@ function handleConnectionStatus(data) {
             connectionSection.style.display = 'none';
             categoriesSection.style.display = 'none';
             locationSection.style.display = 'none';
+            flightPlannerSection.style.display = 'none'; // Hide flight planner
             discoverySection.style.display = 'block'; // Show discovery section on connection failed/error
             showDiscoveryStatus(data.message || 'Connection error', 'error');
             break;
@@ -401,6 +441,184 @@ function updateLocationDisplay(data) {
     setTimeout(() => {
         updateDot.style.animation = 'pulse 2s infinite';
     }, 10);
+}
+
+// Flight Plan Display
+function updateFlightPlanDisplay(rawData) {
+    let data;
+    if (typeof rawData === 'string') {
+        try {
+            data = JSON.parse(rawData);
+        } catch (e) {
+            console.error("Error parsing flight plan JSON:", e);
+            fpBearing.textContent = '-';
+            fpDesiredTrack.textContent = '-';
+            fpDistanceToDestination.textContent = '-';
+            fpDistanceToNext.textContent = '-';
+            fpEtaToDestination.textContent = '-';
+            fpEtaToNext.textContent = '-';
+            fpEteToDestination.textContent = '-';
+            fpEteToNext.textContent = '-';
+            fpTrack.textContent = '-';
+            fpWaypointName.textContent = '-';
+            fpIcao.textContent = '-';
+            fpNextWaypointLatitude.textContent = '-';
+            fpNextWaypointLongitude.textContent = '-';
+            fpXTrackErrorDistance.textContent = '-';
+            fpXTrackErrorAngle.textContent = '-';
+            fpTotalDistance.textContent = '-';
+            fpNextWaypointIndex.textContent = '-';
+            fpWaypointsList.innerHTML = `<li style="color: #ff4444; font-weight: bold;">Error: Invalid flight plan data format.</li>`;
+            if (flightPlannerSection.style.display === 'none' && isConnected) {
+                flightPlannerSection.style.display = 'block';
+            }
+            return;
+        }
+    } else {
+        data = rawData; // Assume it's already an object (e.g. if backend changes or for testing)
+    }
+
+    if (!data) {
+        // Clear all fields if data is null or undefined after potential parsing
+        fpBearing.textContent = '-';
+        fpDesiredTrack.textContent = '-';
+        fpDistanceToDestination.textContent = '-';
+        fpDistanceToNext.textContent = '-';
+        fpEtaToDestination.textContent = '-';
+        fpEtaToNext.textContent = '-';
+        fpEteToDestination.textContent = '-';
+        fpEteToNext.textContent = '-';
+        fpTrack.textContent = '-';
+        fpWaypointName.textContent = '-';
+        fpIcao.textContent = '-';
+        fpNextWaypointLatitude.textContent = '-';
+        fpNextWaypointLongitude.textContent = '-';
+        fpXTrackErrorDistance.textContent = '-';
+        fpXTrackErrorAngle.textContent = '-';
+        fpTotalDistance.textContent = '-';
+        fpNextWaypointIndex.textContent = '-';
+        fpWaypointsList.innerHTML = '<li>Error: No data received.</li>';
+        if (flightPlannerSection.style.display === 'none' && isConnected) {
+            flightPlannerSection.style.display = 'block';
+        }
+        return;
+    }
+
+    // Check for an error message from the backend
+    if (data.error) {
+        console.error("Flight plan error:", data.error);
+        // Clear all fields
+        fpBearing.textContent = '-';
+        fpDesiredTrack.textContent = '-';
+        fpDistanceToDestination.textContent = '-';
+        fpDistanceToNext.textContent = '-';
+        fpEtaToDestination.textContent = '-';
+        fpEtaToNext.textContent = '-';
+        fpEteToDestination.textContent = '-';
+        fpEteToNext.textContent = '-';
+        fpTrack.textContent = '-';
+        fpWaypointName.textContent = '-';
+        fpIcao.textContent = '-';
+        fpNextWaypointLatitude.textContent = '-';
+        fpNextWaypointLongitude.textContent = '-';
+        fpXTrackErrorDistance.textContent = '-';
+        fpXTrackErrorAngle.textContent = '-';
+        fpTotalDistance.textContent = '-';
+        fpNextWaypointIndex.textContent = '-';
+        // Display the error in the waypoints list area
+        fpWaypointsList.innerHTML = `<li style="color: #ff4444; font-weight: bold;">Error: ${data.error}</li>`;
+        // Ensure the section is visible to show the error
+        if (flightPlannerSection.style.display === 'none' && isConnected) {
+            flightPlannerSection.style.display = 'block';
+        }
+        return;
+    }
+
+    // Check if the data object is not a valid flight plan (e.g., empty object from backend)
+    // by checking for a key field like 'bearing'.
+    if (typeof data.bearing === 'undefined') {
+        console.warn("Received flight plan data object without expected fields (e.g., bearing). Assuming no active flight plan.");
+        // Clear all fields
+        fpBearing.textContent = '-';
+        fpDesiredTrack.textContent = '-';
+        fpDistanceToDestination.textContent = '-';
+        fpDistanceToNext.textContent = '-';
+        fpEtaToDestination.textContent = '-';
+        fpEtaToNext.textContent = '-';
+        fpEteToDestination.textContent = '-';
+        fpEteToNext.textContent = '-';
+        fpTrack.textContent = '-';
+        fpWaypointName.textContent = '-';
+        fpIcao.textContent = '-';
+        fpNextWaypointLatitude.textContent = '-';
+        fpNextWaypointLongitude.textContent = '-';
+        fpXTrackErrorDistance.textContent = '-';
+        fpXTrackErrorAngle.textContent = '-';
+        fpTotalDistance.textContent = '-';
+        fpNextWaypointIndex.textContent = '-';
+        fpWaypointsList.innerHTML = '<li>No active flight plan data found.</li>';
+        // Ensure the section is visible to show this message
+        if (flightPlannerSection.style.display === 'none' && isConnected) {
+            flightPlannerSection.style.display = 'block';
+        }
+        return;
+    }
+
+    // If no error and data structure seems valid, proceed to populate the data
+    fpBearing.textContent = data.bearing !== null ? data.bearing.toFixed(2) : '-';
+    fpDesiredTrack.textContent = data.desiredTrack !== null ? data.desiredTrack.toFixed(2) : '-';
+    fpDistanceToDestination.textContent = data.distanceToDestination !== null ? data.distanceToDestination.toFixed(2) + ' nm' : '-';
+    fpDistanceToNext.textContent = data.distanceToNext !== null ? data.distanceToNext.toFixed(2) + ' nm' : '-';
+
+    // ETA specific handling
+    // If ETE is Infinity or NaN, or ETA is 0 or a very large number, display N/A for ETA.
+    if (data.eteToDestination === "Infinity" || data.etaToDestination === 0 || (typeof data.etaToDestination === 'number' && data.etaToDestination > 10 ** 14)) {
+        fpEtaToDestination.textContent = 'N/A';
+    } else {
+        fpEtaToDestination.textContent = data.etaToDestination ?? '-';
+    }
+
+    if (data.eteToNext === "NaN" || data.etaToNext === 0 || (typeof data.etaToNext === 'number' && data.etaToNext > 10 ** 14)) {
+        fpEtaToNext.textContent = 'N/A';
+    } else {
+        fpEtaToNext.textContent = data.etaToNext ?? '-';
+    }
+
+    fpEteToDestination.textContent = data.eteToDestination ?? '-';
+    fpEteToNext.textContent = data.eteToNext ?? '-';
+    fpTrack.textContent = data.track !== null ? data.track.toFixed(2) : '-';
+    fpWaypointName.textContent = data.waypointName ?? '-';
+    fpIcao.textContent = data.icao ?? '-';
+    fpNextWaypointLatitude.textContent = data.nextWaypointLatitude !== null ? data.nextWaypointLatitude.toFixed(5) : '-';
+    fpNextWaypointLongitude.textContent = data.nextWaypointLongitude !== null ? data.nextWaypointLongitude.toFixed(5) : '-';
+    fpXTrackErrorDistance.textContent = data.xTrackErrorDistance !== null ? data.xTrackErrorDistance.toFixed(2) + ' nm' : '-';
+    fpXTrackErrorAngle.textContent = data.xTrackErrorAngle !== null ? (data.xTrackErrorAngle * 180 / Math.PI).toFixed(2) + '°' : '-'; // Convert radians to degrees
+    fpTotalDistance.textContent = data.totalDistance !== null ? data.totalDistance.toFixed(2) + ' nm' : '-';
+    fpNextWaypointIndex.textContent = data.nextWaypointIndex ?? '-';
+
+    if (data.detailedInfo && data.detailedInfo.flightPlanItems) {
+        fpWaypointsList.innerHTML = ''; // Clear previous waypoints
+        data.detailedInfo.flightPlanItems.forEach(item => {
+            const li = document.createElement('li');
+            li.textContent = `${item.name} (Type: ${item.type})`;
+            if (item.children && item.children.length > 0) {
+                const ul = document.createElement('ul');
+                item.children.forEach(child => {
+                    const childLi = document.createElement('li');
+                    childLi.textContent = `${child.identifier} (Alt: ${child.altitude === -1 ? 'N/A' : child.altitude + 'ft'})`;
+                    ul.appendChild(childLi);
+                });
+                li.appendChild(ul);
+            }
+            fpWaypointsList.appendChild(li);
+        });
+    } else {
+        fpWaypointsList.innerHTML = '<li>No detailed waypoint data available.</li>';
+    }
+    // Show the section if it was hidden and we have data
+    if (flightPlannerSection.style.display === 'none' && isConnected) {
+        flightPlannerSection.style.display = 'block';
+    }
 }
 
 

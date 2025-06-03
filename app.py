@@ -26,6 +26,8 @@ discovery_task: Optional[asyncio.Task] = None
 event_loop: Optional[asyncio.AbstractEventLoop] = None
 location_update_task: Optional[threading.Thread] = None
 location_update_active = False
+flight_plan_update_task: Optional[threading.Thread] = None
+flight_plan_update_active = False
 
 
 def run_async(coro):
@@ -56,8 +58,9 @@ def handle_connect():
 def handle_disconnect():
     """Handle client disconnection."""
     print("Client disconnected")
-    # Stop location updates
+    # Stop updates
     stop_location_updates()
+    stop_flight_plan_updates()
     # Disconnect from Infinite Flight if connected
     global current_client
     if current_client and current_client.is_connected:
@@ -162,6 +165,7 @@ def handle_connect_to_device(data):
 
             # Start location updates
             start_location_updates()
+            start_flight_plan_updates()
         else:
             error_msg = current_client.last_error or "Connection failed"
             emit(
@@ -180,8 +184,9 @@ def handle_disconnect_from_device():
     """Disconnect from the current device."""
     global current_client
 
-    # Stop location updates
+    # Stop updates
     stop_location_updates()
+    stop_flight_plan_updates()
 
     if current_client and current_client.is_connected:
         try:
@@ -557,6 +562,65 @@ def _location_update_loop():
 
         # Wait before next update (2 Hz update rate)
         threading.Event().wait(0.5)
+
+
+def start_flight_plan_updates():
+    """Start sending flight plan updates to all connected clients."""
+    global flight_plan_update_task, flight_plan_update_active
+
+    if flight_plan_update_active:
+        return  # Already running
+
+    flight_plan_update_active = True
+    flight_plan_update_task = threading.Thread(
+        target=_flight_plan_update_loop, daemon=True
+    )
+    flight_plan_update_task.start()
+    print("Started flight plan updates")
+
+
+def stop_flight_plan_updates():
+    """Stop sending flight plan updates."""
+    global flight_plan_update_active
+
+    flight_plan_update_active = False
+    print("Stopped flight plan updates")
+
+
+def _flight_plan_update_loop():
+    """Background thread that sends flight plan updates."""
+    global current_client, flight_plan_update_active
+
+    while flight_plan_update_active:
+        if current_client and current_client.is_connected:
+            try:
+                # Assuming flight plan data is available via a state like "aircraft/0/flightplan/full_info"
+                # or a specific method. Using get_state for consistency with location.
+                # The structure of flight_plan_data should match what the frontend expects.
+                flight_plan_data = run_async(
+                    current_client.get_state("aircraft/0/flightplan/full_info")
+                )
+
+                if flight_plan_data:
+                    # Ensure the data is in a serializable format (e.g., dict)
+                    # The user provided JSON indicates it's likely a complex dictionary.
+                    # No specific formatting needed here if get_state returns the dict directly.
+                    socketio.emit("flight_plan_update", flight_plan_data)
+                else:
+                    # Optionally handle cases where flight plan is not available or empty
+                    # print("Flight plan data not available or empty.")
+                    # We can emit an empty object or a specific message if needed
+                    socketio.emit(
+                        "flight_plan_update", {"error": "No active flight plan."}
+                    )
+
+            except Exception as e:
+                print(f"Error getting flight plan data: {e}")
+                # Optionally emit an error to the client if needed
+                socketio.emit("flight_plan_update", {"error": str(e)})
+
+        # Wait before next update (e.g., 1 Hz update rate for flight plan)
+        threading.Event().wait(1.0)
 
 
 if __name__ == "__main__":

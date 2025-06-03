@@ -554,6 +554,83 @@ h2 {
     }
 }
 
+/* Flight Planner Section */
+.flight-planner-section .flight-plan-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    /* Adjusted minmax for potentially more items */
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+/* Reusing .info-item styling for flight plan data points */
+/* No new styles needed if .info-item is suitable, otherwise, they can be added here */
+/* For example, if a slightly different background or padding is desired for flight plan items:
+.flight-planner-section .info-item {
+    background-color: #1c203a; // Slightly different shade
+    padding: 14px;
+}
+*/
+
+.flight-planner-section h3 {
+    color: #00d4ff;
+    /* Consistent with h2 */
+    font-size: 1.25rem;
+    /* Slightly smaller than section h2 */
+    margin-top: 20px;
+    /* Space above the waypoints list */
+    margin-bottom: 12px;
+    border-bottom: 1px solid #1e2139;
+    padding-bottom: 8px;
+}
+
+.flight-planner-section .flight-plan-details {
+    margin-top: 20px;
+    background-color: #1e2139;
+    /* Card-like background for waypoint details */
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #2a2f4e;
+}
+
+
+.flight-planner-section #fpWaypointsList {
+    list-style-type: none;
+    /* Remove default bullet points */
+    padding-left: 0;
+    /* Remove default padding */
+}
+
+.flight-planner-section #fpWaypointsList>li {
+    background-color: #151a36;
+    /* Darker background for each main waypoint item */
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    border: 1px solid #2a2f4e;
+    font-weight: 500;
+}
+
+.flight-planner-section #fpWaypointsList>li>ul {
+    list-style-type: none;
+    padding-left: 20px;
+    /* Indent child waypoints */
+    margin-top: 8px;
+}
+
+.flight-planner-section #fpWaypointsList>li>ul>li {
+    padding: 6px 0;
+    font-size: 0.9rem;
+    color: #b0bac9;
+    /* Lighter color for child waypoints */
+    border-bottom: 1px dashed #2a2f4e;
+}
+
+.flight-planner-section #fpWaypointsList>li>ul>li:last-child {
+    border-bottom: none;
+}
+
+
 /* Responsive Design */
 @media (max-width: 768px) {
     header {

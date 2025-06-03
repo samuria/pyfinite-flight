@@ -22,6 +22,7 @@ The project includes a Flask-based web interface for interacting with Infinite F
 -   Real-time device discovery.
 -   Visual connection management.
 -   Display of aircraft information (Aircraft, Livery, Location, Speed, Altitude, Heading).
+-   **Flight Plan Display**: Shows current flight plan details, including bearing, desired track, distances, ETAs, ETEs, current track, next waypoint information, cross-track error, and a list of all waypoints with their types and altitudes. This data is updated periodically.
 -   Categorized browsing of all available aircraft states.
 -   Ability to set specific states (e.g., "Set Flaps to 1" button).
 -   Responsive design.
